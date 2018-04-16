@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+
+##convs-v4 for python
+
+import magic
+import enzyme
+from subprocess import Popen, PIPE
+import tempfile
+
+fb = tempfile.TemporaryDirectory()
+fb = tempfile.TemporaryFile() ##fb.close
+#'/tmp/tmpc6czryf1'
+
+with open('[SoAnime] Enmusubi 15.mkv', 'rb') as f:
+	mkv = enzyme.MKV(f)
+
+magic.from_file('/tmp/img_3304.jpg', mime=True)
+
+sub_old
+sub_new
+video_high
+output
+
+def read_mkv(file):
+	with open('[SoAnime] Enmusubi 15.mkv', 'rb') as f:
+		return enzyme.MKV(f)
+
+def check_sub(data):
+	if len(data.subtitles_tracks) == 0:
+		raise NameError("this file don't have any subtitle")
+
+sub_type=mkv.subtitle_tracks[0].codec_type
+
+def execute(command):
+	p = Popen(command, stdout=PIPE, stderr=PIPE, shell=True)
+	#p.wait()
+	stdout, stderr = p.communicate()
+	return p.returncode, stdout, stderr
+
+if sub_type in ("S_TEXT/ASS", "S_TEXT/SSA", "S_TEXT/SRT"):
+	fb = tempfile.TemporaryDirectory()
+	execute("mkvextract tracks $$$file $point:fb.name")
+
+def read_subs(file_):
+	ret = []
+	mime = magic.from_file(file_, mime=True)
+	if mime == "mkv":
+		mkv = read_mkv(file_)
+		check_sub(mkv)
+		for k in mkv.subtitle_tracks:
+			t = tempfile.TemporaryFile()
+			execute('mkvextract tracks ' + file_ + ' ' + k.id + ':' + t.name)
+			ret.append([k.id, t])
+	elif mime in ()
+		ret.append([0, file_])
+
+mkvextract tracks "input.mkv" 3:"subtitle_dan.sup" 
+java -jar BDSup2Sub.jar --language da -o output.da.sub "subtitle_dan.sup"
+vobsub2srt --lang da --verbose "input_filename_without_the_idx_extension"

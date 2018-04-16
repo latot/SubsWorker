@@ -1,0 +1,46 @@
+$low
+
+$high
+
+set -e
+
+bds2s="/home/pipe/Descargas/BDSup2Sub.jar"
+
+x1=$(mkvmerge -i "$low" | grep sub | awk '{gsub(":","");print $6}')
+x1=$(echo $x1 | awk '{print $1}')
+
+if [ "$x1" == "" ]; then
+echo Fail x1
+read x
+if [ "$x" == "q" ]; then echo $low; exit 1;fi
+fi
+
+mkvextract tracks "$low" $x1:/tmp/tmp.srt
+t1=$(awk -F, 'BEGIN{n=""}{if($1=="Dialogue: 0"){if((n=="")&&($2>0))n=$2;if(n=="")next;if($2<n)n=$2}}END{split(n,a,":"); print a[3]}' /tmp/tmp.srt)
+
+x2=$(mkvmerge -i "$high" | grep sub | awk '{gsub(":","");print $6}')
+x2=$(echo $x2 | awk '{print $1}')
+
+if [ "$x2" == "" ]; then
+echo Fail x2
+read x
+if [ "$x" == "q" ]; then echo $high; exit 1;fi
+fi
+
+mkvextract tracks "$high" $x2:/tmp/tmp.sup
+t2=$(java -jar $bds2s "/tmp/tmp.sup" -v -o /tmp/tmp.sup | awk -F'[() ]' '/#/ {if($2==1){split($4,a,":"); print a[3];exit}}')
+
+d=$(python -c "print(float('{0:.3f}'.format($t2-$t1))*1000)")
+
+if [[ $(python -c "if $i>=3500:print(0)") ]]; then
+echo -e "Warning diference up 3.5s \nlow="$low"\nx="$x1"   t="$t1"\nhigh="$high"\nx="$x2"   t="$t2
+read x
+if [ $x == "q" ]; then echo ">4"; exit 1;fi
+fi
+
+mkvmerge -o out -A -D -s $x1 -y $x1:$d "$low" "$high"
+
+
+low="/media/b5971818-262e-4370-a01d-6f2c72ad4822/Series/Shakugan no Shana/2/Shakugan no Shana II - $i (1280x720 x264 AAC).mkv"
+
+high="/media/b5971818-262e-4370-a01d-6f2c72ad4822/[philosophy-[Shakugan no Shana]/[philosophy-raws][Shakugan no Shana II]/[philosophy-raws][Shakugan no Shana II][$i][BDRIP][Hi10P FLAC][1920X1080].mkv"
