@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-f1='[GJM] Ao no Kanata no Four Rhythm - 01 (BD 1080p) [4342D6A5].mkv'
-
 from subprocess import Popen, PIPE
 import tempfile
 import os.path
@@ -128,7 +126,7 @@ def oavg2(w, k, t = 10, s = 0):
     av = False
     cv = False
     v = numpy.mean(a, axis=0)
-    for i in range(s*t, len(a)):
+    for i in range(s*t*k, len(a)):
         if not av and a[i][0] >= v[0] and a[i][1] >= v[1]: av = True
         if not cv:
             c[0] += a[i][0]
@@ -150,7 +148,7 @@ def delay2(a1, a2):
     # FFT convolution
     c1 = numpy.argmax(numpy.abs(fftpack.ifft(-a1.conjugate()*a2, axis=0))) #delay a1 + shift = a2
     # Be careful, this is a circular convolution, we always delay the minimum range possible
-    # because we are calculating a sample of the audio
+    # because we are calculating a sample of the audio, not fully
     return (c1 if c1 <= l else c1 - l*2)
 
 def open_(file_):
