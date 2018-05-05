@@ -210,7 +210,7 @@ def main(sub, df, o, m = 1, di = False):
         fpost = audio_sync(sub, di, df)
     elif m == 2:
         fpost = sync_text(sub, df, di)
-#    fpost.save(o)
+    fpost.save(o)
     close_subs()
 
 if __name__ == '__main__':
