@@ -136,21 +136,22 @@ def oavg2(w, k, t = 10, s = 0):
             if c[0] >= t*k*v[0] and c[1] >= t*k*v[1]:
                 cv = True
         if av and cv:
-            return ((i + 1) if i/2 == int(i/2) else i)
+            return i
     raise Exception("Your are requesting somthing")
 
 def delay2(a1, a2):
     l = len(a1)
     if l != len(a2): raise(Exception("rfvale"))
-    # Without this the code will can't recognize the time direcction of the shift if is in the middle
-    if l/2 == int(l/2): raise(Exception("don't use pair len, i don't know what do with it"))
+    # We fill with zeros to can detect if we need +t or -t
+    a1 = numpy.append(a1, a1*0)
+    a2 = numpy.append(a2, a2*0)
     a1 = fftpack.fft(a1, axis=0)
     a2 = fftpack.fft(a2, axis=0)
     # FFT convolution
     c1 = numpy.argmax(numpy.abs(fftpack.ifft(-a1.conjugate()*a2, axis=0))) #delay a1 + shift = a2
     # Be careful, this is a circular convolution, we always delay the minimum range possible
     # because we are calculating a sample of the audio
-    return (c1 if c1 < l/2 else c1 - l)
+    return (c1 if c1 <= l else c1 - l*2)
 
 def open_(file_):
     k, a = read(file_)
@@ -209,7 +210,7 @@ def main(sub, df, o, m = 1, di = False):
         fpost = audio_sync(sub, di, df)
     elif m == 2:
         fpost = sync_text(sub, df, di)
-    fpost.save(o)
+#    fpost.save(o)
     close_subs()
 
 if __name__ == '__main__':
