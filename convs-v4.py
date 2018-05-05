@@ -24,6 +24,12 @@ def execute(command):
 	stdout, stderr = p.communicate()
 	return p.returncode, stdout, stderr
 
+def read_file(file_):
+    t = tempfile.NamedTemporaryFile()
+    c, o, e = execute('LANG="en_US.utf8" mkvmerge -J "{}" "{}"'.format(t.name, file_)
+    #read json
+    return json
+
 def get_mime(file_):
 	tmp = magic.from_file(file_, mime=True).decode('utf-8')
 	if tmp == "text/plain":
