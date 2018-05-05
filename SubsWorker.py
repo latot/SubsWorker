@@ -173,7 +173,7 @@ def audio_delay(file1, file2):
     a1 = numpy.diff(a1, axis=0)
     a2 = numpy.diff(a2, axis=0)
     m = numpy.max([oavg2(a1, k1), oavg2(a2, k2)])
-    m = numpy.min([len(a1), len(a2)])
+#    m = numpy.min([len(a1), len(a2)])
     a1 = to_mono(a1)
     a2 = to_mono(a2)
     r = delay2(a1[0:m], a2[0:m])
