@@ -18,6 +18,72 @@ from scipy import signal, fftpack
 
 temp = []
 
+def f2d(x):
+    return float("{0:.2f}".format(x))
+
+def lpos(text, x, y):
+    p = text.find("\pos")
+    if p == -1: return text
+    e = text.find(")", p)
+    ss = text[p + 5:e].replace(" ", "").split(",")
+    assert(len(ss) == 2)
+    return '{}\\pos({},{}){}'.format(text[0:p], float(ss[0]) + x, float(ss[1]) + y, text[e + 1:len(text)])
+
+def pos(sub, x, y):
+    for i in range(len(sub)):
+        sub[i].text = lpos(sub[i].text, x, y)
+    return sub
+
+def resize(ix, iy, fx, fy, sub):
+    sub.info['PlayResY'] = fy
+    sub.info['PlayResX'] = fx
+#    r = min(fx/ix, fy/iy)
+    r = fy/iy
+    for a in sub.styles.keys():
+        sub.styles[a].marginv = round(sub.styles[a].marginv*r)
+        sub.styles[a].marginr = round(sub.styles[a].marginr*r)
+        sub.styles[a].marginl = round(sub.styles[a].marginl*r)
+        sub.styles[a].shadow = f2d(sub.styles[a].shadow*r)
+        sub.styles[a].outline = f2d(sub.styles[a].outline*r)
+        sub.styles[a].fontsize = f2d(sub.styles[a].fontsize*r)
+    return sub
+
+def toass(sub):
+    if sub[len(sub) - 3:len(sub)] == "ass": return pysubs2.load(sub)
+    s = pysubs2.load(sub)
+    s.save("/tmp/tmp.ass")
+    ss = pysubs2.load("/tmp/tmp.ass")
+    for j in ss.styles:
+        if 'backcolor' in dir(s.styles[j]):
+            ss.styles[j].outlinecolor = s.styles[j].backcolor
+    return ss
+
+def num2list(start, end, fill = -1):
+    if fill == -1: fill = len(str(end))
+    r = []
+    for i in range(start, end + 1):
+        r.append(str(i).zfill(fill))
+    return r
+
+def merge(ss):
+    s1 = ss[0]
+    for i_ in range(1, len(ss)):
+        i = ss[i_]
+        for j in i:
+            s1.insert(0, j)
+        s1.import_styles(i)
+    return s1
+
+def merged(ss, t):
+    for i_ in range(len(ss)):
+        ss[i_].shift(ms=t[i_])
+    return merge(ss)
+
+def mergeda(ss, t):
+    for i_ in range(len(ss)):
+        ss[_i] = toass(ss[i_])
+    return merge(ss, t)
+
 def get_temp(*param):
     t = tempfile.NamedTemporaryFile(*param)
     temp.append(t)
@@ -209,41 +275,3 @@ def adelay2(file1, file2, sample):
     file2 = to_wav(file2, sample)
     ad = audio_delay(file1, file2)
     return int(ad*1000/sample)
-
-def main(sub, df, o, m = 1, di = False, s = 1000):
-    if not di: di = sub
-    check_file(sub)
-    check_file(df)
-    if di: check_file(di)
-    if m == 0:
-        raise(Exception("not yet"))
-    elif m == 1:
-        fpost = audio_sync(sub, di, df)
-    elif m == 2:
-        fpost = sync_text(sub, df, di)
-    fpost.save(o)
-    close_subs()
-
-def main2(sub, df, o , sample, m = 1, di = False):
-    if not di: di = sub
-    check_file(sub)
-    check_file(df)
-    if di: check_file(di)
-    m = adelay(di, df, sample)
-    t = get_temp()
-    kc, ko, ke = execute('mkvmerge -o "{}" -A -D "{}" -A -D -S "{}"'.format(t.name, sub, di))
-    kc, ko, ke = execute('mkvmerge -o "{}.mkv" "{}" -y 0:{} "{}"'.format(o, df, m, t.name))
-    print('mkvmerge -o "{}.mkv" "{}" -y 0:{} "{}"'.format(o, df, m, t.name))
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Sync subs with others')
-    parser.add_argument('sub', help='subtitle to be synced')
-    parser.add_argument('-m', '--method', dest='m', default=0, help="0 - Auto, 1 - Audio, 2 - Text")
-    parser.add_argument('-di', '--initial_data', dest='di', default=False, help="data of the subs to be synced")
-    parser.add_argument('-s', '--sample', dest='sample', default=1000, help="sample of audio per second")
-    parser.add_argument('df', help="new data video to sync the subs")
-    parser.add_argument('o', help='output file, without extension')
-    args = parser.parse_args()
-    args.sample = int(args.sample)
-    main2(args.sub, args.df, args.o, args.sample, args.m, args.di)
-
